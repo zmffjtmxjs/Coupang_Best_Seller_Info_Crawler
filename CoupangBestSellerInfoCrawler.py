@@ -10,8 +10,7 @@ from openpyxl.drawing.image import Image
 
 query_url = "http://corners.gmarket.co.kr/Bestsellers"
 
-f_dir = "E:/coding/3years/python/Coupang_Best_Seller_Info_Crawler/"
-print("\n")
+f_dir = "E:/coding/3years/python/GMarket_Best_Seller_Info_Crawler/"
 
 now = time.localtime()
 s = '%04d-%02d-%02d-%02d-%02d-%02d' % (now.tm_year, now.tm_mon, now.tm_mday, now.tm_hour, now.tm_min, now.tm_sec)
@@ -26,8 +25,6 @@ os.makedirs(f_dir + '/images')
 
 fileName = f_dir + '/' + resultName 
 imageName = f_dir + '/images/'
-
-
 
 path = "E:/coding/3years/chrome driver/chromedriver.exe"
 driver = webdriver.Chrome(path)
@@ -46,7 +43,6 @@ soup = BeautifulSoup(html, 'html.parser')
 reple_result = soup.select('#gBestWrap > div > div:nth-child(5) > div:nth-child(3) > ul')
 slist = reple_result[0].find_all('li')
 
-
 cnt = 1
 ranking = []
 title = []
@@ -54,9 +50,6 @@ fullPrice = []
 currentPrice = []
 discountPer = []
 imgs = []
-
-reple_result = soup.select('#gBestWrap > div > div:nth-child(5) > div:nth-child(3) > ul')
-slist = reple_result[0].find_all('li')
 
 
 for li in slist:
@@ -94,7 +87,7 @@ for li in slist:
     print("5.할인율 : " + getDiscountPer)
     
     f = open(fileName + '.txt', 'a', encoding = 'UTF-8')
-    f.write("-"*40 + "\n")
+    f.write("-" * 40 + "\n")
     f.write("1.판매순위 : " + str(cnt) + '\n')
     f.write("2.제품소개 : " + getTitle + '\n')
     f.write("3.원래가격 : " + getFullPrice + '\n')
@@ -117,7 +110,7 @@ for li in slist:
             imgs.append('')
     else:
         imgs.append('')
-    
+    print('\n')
     cnt += 1
     
 driver.quit()
@@ -131,9 +124,6 @@ amazon_best_seller['원래가격'] = pd.Series(fullPrice)
 amazon_best_seller['판매가격'] = pd.Series(currentPrice)
 amazon_best_seller['할인율'] = pd.Series(discountPer)
 
-#csv 형태로 저장
-amazon_best_seller.to_csv(fileName + '.csv', encoding = "utf-8-sig", index = True)
-
 #엑셀 형태로 저장하기
 amazon_best_seller.to_excel(fileName + '.xlsx', index = True)
 
@@ -142,33 +132,16 @@ wb = load_workbook(filename = fileName + '.xlsx', read_only = False, data_only =
 ws = wb.active
 
 for i in range(0, len(imgs)):
-    if(imgs[i] == ''):
-        continue
-    img = Image(imgs[i])
-    
-    cellNum = i + 2
-    
-    ws.row_dimensions[cellNum].height = img.height * 0.75 + 15
-    ws.column_dimensions['C'].width = img.width * 0.125
-    
-    ws.add_image(img, 'C' + str(cellNum))
+    if(imgs[i] != ''):                                                  #이미지 파일 누락 시 건너뜀
+        img = Image(imgs[i])                                            #추가 할 이미지 파일 위치
+        
+        cellNum = i + 2                                                 #셀 크기 조절 대상을 이미지 저장 위치에 맞춤
+        
+        ws.row_dimensions[cellNum].height = img.height * 0.75 + 16      #이미지 크기에 맞게 높이 조절
+        ws.column_dimensions['C'].width = 102                           #제목 최대 길이에 맞게 넓이 조절
+        
+        ws.add_image(img, 'C' + str(cellNum))                           #이미지를 엑셀에 추가
 
 wb.save(fileName + '.xlsx')
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+print('정상적으로 처리되었습니다.')
